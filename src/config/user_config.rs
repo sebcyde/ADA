@@ -15,7 +15,7 @@ pub mod user_config {
         let mut raw_user_config_dir: PathBuf = get_user_config_dir();
         raw_user_config_dir.push("user_config.json");
 
-        let user_config_file =
+        let user_config_file: File =
             File::open(&raw_user_config_dir).expect("Failed to open user_config.json");
         let buffer_reader = BufReader::new(user_config_file);
 
@@ -23,7 +23,6 @@ pub mod user_config {
             serde_json::from_reader(buffer_reader).expect("Failed to parse user_config.json");
 
         println!("Sentry Path: {:?}", user_config.plugins.sentry);
-        // println!("Plugin 2 path: {:?}", user_config);
 
         return user_config;
     }

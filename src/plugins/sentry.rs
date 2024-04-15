@@ -1,31 +1,17 @@
 pub mod sentry {
 
-    use sysinfo::{Pid, PidExt, Process, ProcessExt, System, SystemExt};
+    use std::path::PathBuf;
+
+    use crate::{
+        config::user_config::user_config::get_user_config, utils::helpers::helpers::kill_process,
+    };
 
     pub fn run_sentry() {
-        // let sentry_executable_location = dirs::d
-    }
+        // Kill any currently running Sentry processes
+        kill_process(String::from("sentry"));
 
-    pub fn stop_sentry() {
-        let mut system: System = System::new_all();
-        system.refresh_all();
-
-        let mut sentry_instances: Vec<(&Pid, &Process)> = Vec::new();
-        let current_sentry: u32 = std::process::id();
-
-        for (pid, process) in system.processes() {
-            if process.name().eq_ignore_ascii_case("sentry_lite") {
-                sentry_instances.push((pid, process));
-            }
-        }
-
-        for (pid, process) in sentry_instances {
-            if !pid.as_u32().eq(&current_sentry) {
-                process.kill();
-            }
-        }
-
-        println!("All Sentry instances stopped. Exiting...\n");
-        std::process::exit(0);
+        // Start a new Sentry instance - remember to pass in clean paramater
+        let sentry_path: PathBuf = get_user_config().plugins.sentry;
+        println!("Sentry path from config: {:?}", &sentry_path);
     }
 }

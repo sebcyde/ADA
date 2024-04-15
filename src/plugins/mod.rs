@@ -1,1 +1,2 @@
+mod hyperlink;
 mod sentry;

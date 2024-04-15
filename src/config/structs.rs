@@ -5,7 +5,7 @@ use serde::Deserialize;
 #[derive(Deserialize)]
 pub struct PluginConfig {
     pub sentry: PathBuf,
-    pub plugin2: PathBuf,
+    pub hyperlink: PathBuf,
 }
 
 #[derive(Deserialize)]
