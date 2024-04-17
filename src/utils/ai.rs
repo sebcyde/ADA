@@ -12,24 +12,31 @@ pub mod ai {
 
     use tokio::sync::mpsc::Receiver;
 
-    pub async fn chat_with_ada() {
+    use crate::config::ada_config::ada_config::SYSTEM_CONTENT;
+
+    pub async fn primary_ada_builder() {
         dotenv().unwrap();
         set_key(env::var("OPENAI_KEY").unwrap());
 
-        let mut messages = vec![  ChatCompletionMessage {
-            role: ChatCompletionMessageRole::System,
-            content: Some("Your name is ADA. You are an assistant to a developer named Sebastian. You are friendly and very casual with a good sense of humour. You run on a plugin system that allows you many functions and can be extended by creating binaries and referencing them in your source code. I (Sebastian) am mainly a web developer with experience in React, NextJS, NodeJS and tools of that nature but Im also very good with the Rust programming language as well as a small bit of C#.".to_string()),
-            name: Some("ADA".to_string()),
-            function_call: None,
-        }, ChatCompletionMessage {
-            role: ChatCompletionMessageRole::User ,
-            name: Some("Sebastian".to_string()),
-            content: Some("Hi ADA.".to_string()),
-            function_call: None,
-        }];
+        let mut messages: Vec<ChatCompletionMessage> = vec![
+            ChatCompletionMessage {
+                role: ChatCompletionMessageRole::System,
+                content: Some(SYSTEM_CONTENT.to_string()),
+                name: Some("ADA".to_string()),
+                function_call: None,
+            },
+            ChatCompletionMessage {
+                role: ChatCompletionMessageRole::User,
+                name: Some("Sebastian".to_string()),
+                content: Some("Hi ADA.".to_string()),
+                function_call: None,
+            },
+        ];
 
         loop {
-            let chat_stream = ChatCompletionDelta::builder("gpt-3.5-turbo", messages.clone())
+            let chat_stream: Receiver<
+                openai::chat::ChatCompletionGeneric<openai::chat::ChatCompletionChoiceDelta>,
+            > = ChatCompletionDelta::builder("gpt-3.5-turbo", messages.clone())
                 .create_stream()
                 .await
                 .unwrap();
