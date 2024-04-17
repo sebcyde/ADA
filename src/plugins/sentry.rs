@@ -1,17 +1,35 @@
 pub mod sentry {
 
-    use std::path::PathBuf;
+    use crate::plugins::control::control::Function;
+    use std::process::Output;
 
-    use crate::{
-        config::user_config::user_config::get_user_config, utils::helpers::helpers::kill_process,
-    };
+    pub struct Sentry;
 
-    pub fn run_sentry() {
-        // Kill any currently running Sentry processes
-        kill_process(String::from("sentry"));
+    impl Function for Sentry {
+        fn name(&self) -> &str {
+            "Start Sentry"
+        }
 
-        // Start a new Sentry instance - remember to pass in clean paramater
-        let sentry_path: PathBuf = get_user_config().plugins.sentry;
-        println!("Sentry path from config: {:?}", &sentry_path);
+        fn description(&self) -> &str {
+            "Sentry is a file system cleaner. It scans through all of my directories and organises files into their correct places based on their file types. It also renames files to follow specific formats, for example removing spaces and replacing capital letters with their lower case equivalents. This function starts the Sentry program."
+        }
+
+        fn execute(&self, input: &str) -> String {
+            format!("Sentry activated with input: {}", input);
+            let output: Output = std::process::Command::new(
+                "C:/Users/sebastian.cyde/Documents/Code/01-Programs/sentry_lite/target/debug/sentry_lite.exe",
+            )
+            .arg("clean")
+            .output()
+            .expect("Failed to start Sentry");
+
+            println!("{}", String::from_utf8_lossy(&output.stdout));
+
+            if !output.status.success() {
+                return "Sentry encountered an error and has stopped running".to_string();
+            }
+
+            return "Sentry activation successful. File system is now being cleaned.".to_string();
+        }
     }
 }

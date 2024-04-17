@@ -6,16 +6,11 @@ pub mod ai {
 
     use std::io::{stdin, stdout, Write};
 
-    use openai::chat::{ChatCompletion, ChatCompletionMessage, ChatCompletionMessageRole};
+    use openai::chat::{
+        ChatCompletion, ChatCompletionDelta, ChatCompletionMessage, ChatCompletionMessageRole,
+    };
 
-    pub async fn make_openai_call() {
-        // dotenv().ok();
-
-        // let api_key: String = env::var("API_KEY").expect("API_KEY not set in .env");
-        // println!("\nAPI_KEY: {}\n", api_key);
-
-        // set_key(env::var("OPENAI_KEY").unwrap());
-    }
+    use tokio::sync::mpsc::Receiver;
 
     pub async fn chat_with_ada() {
         dotenv().unwrap();
@@ -34,16 +29,14 @@ pub mod ai {
         }];
 
         loop {
-            let chat_completion = ChatCompletion::builder("gpt-3.5-turbo", messages.clone())
-                .create()
+            let chat_stream = ChatCompletionDelta::builder("gpt-3.5-turbo", messages.clone())
+                .create_stream()
                 .await
                 .unwrap();
-            let returned_message = chat_completion.choices.first().unwrap().message.clone();
 
-            println!(
-                "ADA: {}\n",
-                &returned_message.content.clone().unwrap().trim()
-            );
+            let chat_completion: ChatCompletion = listen_for_tokens(chat_stream).await;
+            let returned_message: ChatCompletionMessage =
+                chat_completion.choices.first().unwrap().message.clone();
 
             messages.push(returned_message);
 
@@ -62,5 +55,29 @@ pub mod ai {
 
             println!("");
         }
+    }
+
+    async fn listen_for_tokens(mut chat_stream: Receiver<ChatCompletionDelta>) -> ChatCompletion {
+        let mut merged: Option<ChatCompletionDelta> = None;
+        while let Some(delta) = chat_stream.recv().await {
+            let choice = &delta.choices[0];
+            if let Some(_role) = &choice.delta.role {
+                print!("ADA: ");
+            }
+            if let Some(content) = &choice.delta.content {
+                print!("{}", content);
+            }
+            if let Some(_) = &choice.finish_reason {
+                print!("\n\n");
+            }
+            stdout().flush().unwrap();
+            match merged.as_mut() {
+                Some(c) => {
+                    c.merge(delta).unwrap();
+                }
+                None => merged = Some(delta),
+            };
+        }
+        merged.unwrap().into()
     }
 }
