@@ -19,7 +19,7 @@ pub mod ada_config {
 
         let ada_config_file: File =
             File::open(&raw_ada_config_dir).expect("Failed to open ada_config.json");
-        let buffer_reader = BufReader::new(ada_config_file);
+        let buffer_reader: BufReader<File> = BufReader::new(ada_config_file);
 
         let ada_config: AdaConfig =
             serde_json::from_reader(buffer_reader).expect("Failed to parse ada_config.json");

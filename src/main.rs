@@ -1,3 +1,4 @@
+use crate::plugins::backup::backup::backup_fc;
 use crate::utils::ai::ai::primary_ada_builder;
 
 pub mod config;
@@ -8,6 +9,8 @@ pub mod utils;
 async fn main() {
     println!("\nLoading ADA...\n");
 
-    primary_ada_builder().await;
-    secondary_ada_builder().await;
+    backup_fc();
+
+    // primary_ada_builder().await;
+    // secondary_ada_builder().await;
 }

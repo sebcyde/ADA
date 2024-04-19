@@ -40,7 +40,7 @@ pub mod hyperlink {
         kill_process(String::from("hyperlink"));
 
         // Start a new hyperlink instance - remember to pass in clean paramater
-        let hyperlink_path: PathBuf = get_user_config().plugins.hyperlink;
+        let hyperlink_path: PathBuf = get_user_config().plugins.hyperlink.unwrap();
         println!("Hyperlink path from config: {:?}", &hyperlink_path);
     }
 

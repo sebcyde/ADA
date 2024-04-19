@@ -10,7 +10,7 @@ pub mod penny {
         kill_process(String::from("penny"));
 
         // Start a new hyperlink instance - remember to pass in clean paramater
-        let penny_path: PathBuf = get_user_config().plugins.penny;
+        let penny_path: PathBuf = get_user_config().plugins.penny.unwrap();
         println!("Penny path from config: {:?}", &penny_path);
     }
 }
