@@ -36,7 +36,7 @@ pub mod backup {
         );
     }
 
-    pub fn backup_db(company: COMPANY) {
+    pub fn backup_db(company: COMPANY) -> bool {
         println!("Backing up database...");
 
         let user_config: UserConfig = get_user_config();
@@ -52,7 +52,7 @@ pub mod backup {
         // Paths not set
         if backups_dir.is_none() || database_path.is_none() {
             println!("Directories for database backup have not been set.\n");
-            return;
+            return false;
         };
 
         // Move file into backups dir
@@ -60,7 +60,7 @@ pub mod backup {
 
         if !old_db_path.exists() {
             println!("Database location is invalid\n");
-            return;
+            return false;
         }
 
         let old_db_name: &OsStr = old_db_path.file_name().unwrap();
@@ -86,38 +86,42 @@ pub mod backup {
         std::thread::sleep(std::time::Duration::from_millis(1000));
         std::fs::copy(&old_db_path, &backup_dir).expect("Failed to backup FC database");
 
-        // std::fs::rename(&old_db_path, &backup_dir).expect("Failed to rename FC database");
-
         // Rename to current time
         let current_date_time: String = get_current_date_time_as_string().to_ascii_lowercase();
         backup_dir.set_file_name(format!("{}.db", current_date_time));
 
         std::fs::rename(&old, &backup_dir).expect("Failed to rename FC database");
+
+        return true;
     }
 
     pub fn backup_all() {
+        let mut result: Vec<bool> = Vec::new();
+
         for i in 0..4 {
             match i {
                 0 => {
                     println!("Backing up Electric Shuffle UK");
-                    backup_db(COMPANY::ES_UK);
+                    result.push(backup_db(COMPANY::ES_UK));
                 }
                 1 => {
                     println!("Backing up Electric Shuffle US");
-                    backup_db(COMPANY::ES_US);
+                    result.push(backup_db(COMPANY::ES_US));
                 }
                 2 => {
                     println!("Backing up Flight Club");
-                    backup_db(COMPANY::FC);
+                    result.push(backup_db(COMPANY::FC));
                 }
                 3 => {
                     println!("Backing up Red Engine");
-                    backup_db(COMPANY::RE);
+                    result.push(backup_db(COMPANY::RE));
                 }
                 _ => println!("Loop out of bounds."),
             }
             println!("Backup complete.\n");
             std::thread::sleep(std::time::Duration::from_secs(1));
         }
+
+        println!("Backup Results: {:?}\n", result);
     }
 }
