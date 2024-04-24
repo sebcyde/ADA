@@ -5,7 +5,10 @@ pub mod control {
     use std::fs::{self, DirEntry};
     use std::path::PathBuf;
 
+    use crate::config::ada_config;
     use crate::config::plugins_config::plugins_config::get_plugins_config_dir;
+    use crate::config::structs::UserConfig;
+    use crate::config::user_config::user_config::get_user_config;
     use crate::plugins::ada::ada::ADA;
     use crate::plugins::hyperlink::hyperlink::Hyperlink;
     use crate::plugins::sentry::sentry::Sentry;
@@ -21,6 +24,14 @@ pub mod control {
         fn description(&self) -> &str;
     }
 
+    pub enum PLUGINS {
+        HYPERLINK,
+        PENNY,
+        BACKUP,
+        SENTRY,
+        ADA,
+    }
+
     // External plugins from shared libs (.dll files)
     fn _load_plugin<P: AsRef<OsStr>>(path: P) -> Result<Box<dyn Plugin>, String> {
         unsafe {
@@ -33,7 +44,7 @@ pub mod control {
     }
 
     // Local functions / binaries locally referenced (from plugins dir)
-    pub fn _get_functions() -> Vec<Box<dyn Function>> {
+    pub fn get_functions() -> Vec<Box<dyn Function>> {
         let mut internal_functions: Vec<Box<dyn Function>> = Vec::new();
 
         // Hyperlink - Settings sync program
@@ -67,4 +78,36 @@ pub mod control {
         }
         Ok(plugins)
     }
+
+    // pub fn execute_plugin(plugin_name: PLUGINS) {
+    //     let user_config: UserConfig = get_user_config();
+
+    //     println!("Activating {:?} with input", &plugin_name);
+
+    //     let plugin_path: Option<PathBuf> = match plugin_name {
+    //         PLUGINS::ADA => {}
+    //         PLUGINS::BACKUP => {}
+    //         PLUGINS::HYPERLINK => {}
+    //         PLUGINS::PENNY => {}
+    //         PLUGINS::SENTRY => {}
+    //     };
+
+    //     if plugin_path.is_none() {
+    //         println!("The selected plugin in not setup in ADA's config and cannot be run.\nUpdate config and try again");
+    //     }
+
+    //     let output: std::process::Output = std::process::Command::new(
+    //         "C:/Users/sebastian.cyde/Documents/Code/01-Programs/Hyperlink/target/debug/hyperlink.exe",
+    //     )
+    //     .output()
+    //     .expect("Failed to execute Hyperlink");
+
+    //     println!("{}", String::from_utf8_lossy(&output.stdout));
+
+    //     if !output.status.success() {
+    //         return "Hyperlink encountered an error and has stopped running".to_string();
+    //     }
+
+    //     return "Hyperlink activation successful. Files are now being synced.".to_string();
+    // }
 }

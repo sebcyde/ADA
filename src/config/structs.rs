@@ -1,14 +1,14 @@
 use std::path::PathBuf;
 
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
 
-#[derive(Deserialize)]
+#[derive(Deserialize, Serialize, Default, Debug)]
 pub struct UserConfig {
     pub plugins: PluginConfig,
     pub db_paths: DBConfig,
 }
 
-#[derive(Deserialize)]
+#[derive(Deserialize, Serialize, Default, Debug)]
 pub struct PluginConfig {
     pub sentry: Option<PathBuf>,
     pub hyperlink: Option<PathBuf>,
@@ -16,13 +16,13 @@ pub struct PluginConfig {
 }
 
 // ADA Config
-#[derive(Deserialize)]
+#[derive(Deserialize, Serialize, Default, Debug)]
 pub struct AdaConfig {
     pub code_location: Option<PathBuf>,
 }
 
 // DB Pathing Config
-#[derive(Deserialize)]
+#[derive(Deserialize, Serialize, Default, Debug)]
 pub struct DBConfig {
     pub es_uk_db_path: Option<PathBuf>,
     pub es_us_db_path: Option<PathBuf>,
