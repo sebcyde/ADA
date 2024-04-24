@@ -1,5 +1,6 @@
 pub mod backup {
     use std::{
+        collections::{hash_map, HashMap},
         ffi::{OsStr, OsString},
         path::PathBuf,
     };
@@ -10,10 +11,12 @@ pub mod backup {
     };
 
     use chrono::{DateTime, Datelike, Local, Timelike};
+    use reqwest::get;
 
     pub enum COMPANY {
         FC,
-        ES,
+        ES_UK,
+        ES_US,
         RE,
     }
 
@@ -40,7 +43,8 @@ pub mod backup {
 
         let backups_dir: Option<PathBuf> = user_config.db_paths.backups_dir;
         let database_path: Option<PathBuf> = match company {
-            COMPANY::ES => user_config.db_paths.es_uk_db_path,
+            COMPANY::ES_UK => user_config.db_paths.es_uk_db_path,
+            COMPANY::ES_US => user_config.db_paths.es_us_db_path,
             COMPANY::FC => user_config.db_paths.fc_db_path,
             COMPANY::RE => user_config.db_paths.re_db_path,
         };
@@ -64,7 +68,8 @@ pub mod backup {
         // get backup location
         let mut backup_dir: PathBuf = backups_dir.unwrap();
         match company {
-            COMPANY::ES => backup_dir.push("electric_shuffle_uk"),
+            COMPANY::ES_UK => backup_dir.push("electric_shuffle_uk"),
+            COMPANY::ES_US => backup_dir.push("electric_shuffle_us"),
             COMPANY::FC => backup_dir.push("flight_club"),
             COMPANY::RE => backup_dir.push("red_engine"),
         };
@@ -90,7 +95,27 @@ pub mod backup {
 
     pub fn backup_all() {
         for i in 0..4 {
-            println!("Testing iterator");
+            match i {
+                0 => {
+                    println!("Backing up Electric Shuffle UK");
+                    backup_db(COMPANY::ES_UK);
+                }
+                1 => {
+                    println!("Backing up Electric Shuffle US");
+                    backup_db(COMPANY::ES_US);
+                }
+                2 => {
+                    println!("Backing up Flight Club");
+                    backup_db(COMPANY::FC);
+                }
+                3 => {
+                    println!("Backing up Red Engine");
+                    backup_db(COMPANY::RE);
+                }
+                _ => println!("Loop out of bounds."),
+            }
+            println!("\nBackup complete.\n");
+            std::thread::sleep(std::time::Duration::from_secs(1));
         }
     }
 }

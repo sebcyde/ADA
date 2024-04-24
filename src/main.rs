@@ -12,11 +12,10 @@ pub mod utils;
 async fn main() {
     println!("\nLoading ADA...\n");
 
-    create_user_config();
+    create_user_config(); // Leave in
+    backup_all(); // Currently testing
 
-    backup_db(plugins::backup::backup::COMPANY::FC);
-    backup_all();
-
+    // Need building
     // primary_ada_builder().await;
     // secondary_ada_builder().await;
 }
