@@ -84,7 +84,9 @@ pub mod backup {
         let old: PathBuf = backup_dir.clone();
 
         std::thread::sleep(std::time::Duration::from_millis(1000));
-        std::fs::rename(&old_db_path, &backup_dir).expect("Failed to rename FC database");
+        std::fs::copy(&old_db_path, &backup_dir).expect("Failed to backup FC database");
+
+        // std::fs::rename(&old_db_path, &backup_dir).expect("Failed to rename FC database");
 
         // Rename to current time
         let current_date_time: String = get_current_date_time_as_string().to_ascii_lowercase();
@@ -114,7 +116,7 @@ pub mod backup {
                 }
                 _ => println!("Loop out of bounds."),
             }
-            println!("\nBackup complete.\n");
+            println!("Backup complete.\n");
             std::thread::sleep(std::time::Duration::from_secs(1));
         }
     }
