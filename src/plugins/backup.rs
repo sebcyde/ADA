@@ -1,17 +1,14 @@
 pub mod backup {
     use std::{
-        collections::{hash_map, HashMap},
-        ffi::{OsStr, OsString},
+        ffi::OsStr,
         path::PathBuf,
+        sync::{Arc, Mutex},
+        thread::JoinHandle,
     };
 
-    use crate::{
-        config::{structs::UserConfig, user_config::user_config::get_user_config},
-        utils::helpers::helpers::format_file_name,
-    };
+    use crate::config::{structs::UserConfig, user_config::user_config::get_user_config};
 
     use chrono::{DateTime, Datelike, Local, Timelike};
-    use reqwest::get;
 
     pub enum COMPANY {
         FC,
@@ -37,7 +34,7 @@ pub mod backup {
     }
 
     pub fn backup_db(company: COMPANY) -> bool {
-        println!("Backing up database...");
+        // println!("Backing up database...");
 
         let user_config: UserConfig = get_user_config();
 
@@ -92,6 +89,7 @@ pub mod backup {
 
         std::fs::rename(&old, &backup_dir).expect("Failed to rename FC database");
 
+        println!("Backup Complete.");
         return true;
     }
 
@@ -101,27 +99,60 @@ pub mod backup {
         for i in 0..4 {
             match i {
                 0 => {
+                    //
                     println!("Backing up Electric Shuffle UK");
                     result.push(backup_db(COMPANY::ES_UK));
                 }
                 1 => {
+                    //
                     println!("Backing up Electric Shuffle US");
                     result.push(backup_db(COMPANY::ES_US));
                 }
                 2 => {
+                    //
                     println!("Backing up Flight Club");
                     result.push(backup_db(COMPANY::FC));
                 }
                 3 => {
+                    //
                     println!("Backing up Red Engine");
                     result.push(backup_db(COMPANY::RE));
                 }
                 _ => println!("Loop out of bounds."),
             }
             println!("Backup complete.\n");
-            std::thread::sleep(std::time::Duration::from_secs(1));
         }
 
         println!("Backup Results: {:?}\n", result);
+    }
+
+    pub fn backup_all_multithreaded() {
+        let shared_result_state: Arc<Mutex<Vec<bool>>> = Arc::new(Mutex::new(Vec::new()));
+
+        let es_uk_thread = spawn_thread("ES UK", COMPANY::ES_UK, Arc::clone(&shared_result_state));
+        let es_us_thread = spawn_thread("ES US", COMPANY::ES_US, Arc::clone(&shared_result_state));
+        let fc_uk_thread = spawn_thread("FC", COMPANY::FC, Arc::clone(&shared_result_state));
+        let re_uk_thread = spawn_thread("RE", COMPANY::RE, Arc::clone(&shared_result_state));
+
+        es_uk_thread.join().expect("Bug in ES UK thread");
+        es_us_thread.join().expect("Bug in ES US thread");
+        fc_uk_thread.join().expect("Bug in FC UK thread");
+        re_uk_thread.join().expect("Bug in RE UK thread");
+
+        println!("\nMulti-threaded backup result: {:?}", &shared_result_state);
+    }
+
+    fn spawn_thread(
+        name: &str,
+        company: COMPANY,
+        shared_result_state: Arc<Mutex<Vec<bool>>>,
+    ) -> JoinHandle<()> {
+        std::thread::Builder::new()
+            .name(name.to_string())
+            .spawn(move || {
+                let result = backup_db(company);
+                shared_result_state.lock().unwrap().push(result);
+            })
+            .unwrap()
     }
 }

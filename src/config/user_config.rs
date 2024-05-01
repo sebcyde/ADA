@@ -42,7 +42,7 @@ pub mod user_config {
         default_user_config_file_path.push("user_config.json");
 
         if default_user_config_file_path.exists() {
-            println!("User Config already exists.\n");
+            println!("Successful.\n");
             return;
         }
 
